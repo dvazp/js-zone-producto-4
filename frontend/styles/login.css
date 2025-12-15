@@ -1,0 +1,25 @@
+/* Fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.login_container {
+    max-width: 420px;
+}
+
+.login_form .form-label {
+    text-align: center;
+    font-weight: 700;
+}
+
+/* Navbar */
+.navbar .nav-link {
+    color: var(--bs-dark);
+    font-family: "Roboto", sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+    color: var(--bs-primary);
+    opacity: 0.8;
+}

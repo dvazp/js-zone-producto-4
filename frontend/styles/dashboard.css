@@ -1,0 +1,85 @@
+/* Fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+body {
+    margin: 0px;
+}
+
+/* Navbar */
+.navbar .nav-link {
+    color: var(--bs-dark);
+    font-family: "Roboto", sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+    color: var(--bs-primary);
+    opacity: 0.8;
+}
+
+li>a {
+
+    color: black;
+}
+
+/* Dashboard */
+p {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-style: bold;
+    font-size: 16px;
+    font-weight: 700px;
+}
+.textoNormal {
+    color: rgba(255, 255, 255, 1);
+}
+.fecha {
+    color: rgba(43, 43, 43, 1);
+}
+.efectoCard {
+    transition: transform 0.3s ease;
+}
+.efectoCard:hover {
+    transform: scale(1.1);
+}
+.peticion {
+    background-color: rgba(87, 145, 199, 1) !important;
+}
+
+.card-header h5 {
+    font-weight: 700;
+}
+
+.card {
+    border-radius: 8px;
+}
+
+.grab {
+    cursor: grab;
+}
+
+.destino {
+    border: 0px dashed #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 100%;
+    min-width: 100%;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.destino-zona {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    min-height: 100%;
+    min-width: 100%;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.destino-zona.drag-over {
+    background-color: #e0ffe0; /* Verde clarito */
+    border-color: #28a745; /* Verde */
+}

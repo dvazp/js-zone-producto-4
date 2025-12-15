@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link href="/js-zone-producto-3/backend/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/login.css">
+  <script type="module" src="../js/login.js" defer></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav gap-3 mt-3 mt-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="gestion_usuarios.html">Gestión de Usuarios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="gestion_voluntarios.html">Gestión de Voluntarios</a>
+                    </li>
+                    <li class="nav-item ms-lg-auto"><a class="nav-link" id="user_header" href="#">-no login-</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+  <div class="container my-5 login_container">
+    <div class="card shadow-sm bg-light mx-auto">
+      <div class="card-header bg-success text-white text-center">
+        <h2 class="h5 m-0">INICIAR SESIÓN</h2>
+      </div>
+      <div class="card-body">
+        <form action="/login" method="POST" id="login_form" class="login_form">
+          <div class="mb-3">
+            <label for="user" class="form-label">Correo</label>
+            <input type="email" id="user" name="user" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" id="password" name="password" class="form-control" required />
+          </div>
+          <div class="d-flex justify-content-center">
+            <button id="login-btn" type="submit" class="btn btn-success px-4">Login</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="/js-zone-producto-3/backend/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

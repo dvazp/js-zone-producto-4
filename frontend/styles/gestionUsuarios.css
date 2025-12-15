@@ -1,0 +1,83 @@
+/* Fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root{
+    --primary: #0d6efd;
+    --success: #198754;
+}
+
+/* Navbar */
+.navbar .nav-link {
+    color: var(--bs-dark);
+    font-family: "Roboto", sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+    color: var(--bs-primary);
+    opacity: 0.8;
+}
+
+.title_header h2{
+    font-weight: 700;
+}
+
+.card {
+    border-radius: 8px;
+}
+
+.card-header h5 {
+    font-weight: 700;
+}
+
+.addUser_form .form-label {
+    font-weight: 600;
+}
+
+.user-card {
+    background-color: var(--bs-white);
+    border: 1px solid var(--bs-gray-200);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.user-card + .user-card {
+    margin-top: 8px;
+}
+
+.user-card p{
+    margin-bottom: 0.5rem;
+    color: var(--bs-gray-700);
+}
+
+.user-card:hover {
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+/* Make the user list scroll if many users */
+#users_list{
+    max-height: 48vh;
+    overflow-y: auto;
+}
+
+/* small tweaks for cards on smaller screens */
+@media (max-width: 767px){
+    .card { margin-bottom: 1rem; }
+}
+
+/* remove default form margin if any */
+form { margin: 0; }
+
+/* Botón de eliminar */
+.delete-btn {
+    background-color: red;
+    color: var(--bs-white);
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--bs-border-radius);
+    transition: all 0.3s ease;
+}

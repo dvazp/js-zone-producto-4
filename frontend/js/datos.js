@@ -1,0 +1,41 @@
+let usuariosBase = [
+    {
+        user: "Mario",
+        password: "Mario",
+        nombre: "Mario",
+        email: "mario@mail.com",
+        tipo: "Voluntario"
+    }
+]
+
+let voluntariadosBase = [
+    {
+        titulo : "Se necesita una persona para cuidar de un gato",
+        usuario : "Alejandra",
+        fecha : "16-10-2025",
+        descripcion : "Se busca una persona para cuidar de un gato de 3 meses.",
+        tipo : "Oferta",
+        email: "alejandra@mail.com",
+        id: 1
+    },
+    {
+        titulo : "Se necesita una persona para cuidar de un gato",
+        usuario : "Alejandra",
+        fecha : "16-10-2025",
+        descripcion : "Se busca una persona para cuidar de un gato de 3 meses.",
+        tipo : "Oferta",
+        email: "alejandra@mail.com",
+        id: 2
+    },
+    {
+        titulo : "Se ofrece persona para cuidar de un gato",
+        usuario : "Alejandra",
+        fecha : "16-10-2025",
+        descripcion : "Se busca una persona para cuidar de un gato de 3 meses.",
+        tipo : "Peticion",
+        email: "alejandra@mail.com",
+        id: 3
+    }
+]
+
+export { usuariosBase, voluntariadosBase };
