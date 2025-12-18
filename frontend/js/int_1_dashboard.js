@@ -1,5 +1,18 @@
 import { obtenerUsuarioActivo, obtenerVoluntariados, obtenerSeleccionados, agregarSeleccionado, borrarSeleccionado } from './almacenaje.js';
 
+
+import {io } from "socket.io-client";
+
+//Prueba de socket.io
+const socket = io("http://localhost:5000");
+
+socket.on("PruebaSocket", (arg) => {
+    console.log(arg);
+});
+
+socket.emit("PruebaSocket", "Hola desde el cliente");
+
+
 // Primero mostramos el usuario activo
 function mostrarUsuarioActivo() {
     const userHeader = document.getElementById("user_header");
