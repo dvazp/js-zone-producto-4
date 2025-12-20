@@ -1,10 +1,11 @@
 // Importamos Express, el framework para crear el servidor
 import express from 'express';
+import http from 'http';
 import { MongoClient, ObjectId  } from 'mongodb';
 import fs from 'fs/promises'; // Sirve para leer el json de datos.json
 import crearLoginRoute from "./routes/login.js";
-import { io } from './socket.js';
-
+import { inicializarSocket, getIO } from './socket.js';
+import cors from 'cors';
 
 // Definimos el puerto donde correrá el servidor (3000 por defecto)
 const PORT = process.env.PORT || 3000;
@@ -13,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 // Middleware que permite leer JSON en las peticiones
-app.use(express.json());
+
 
 // Importamos los datos base de usuarios desde el frontend
 /*
@@ -24,6 +25,17 @@ let usuariosCollection;
 let voluntariadosCollection;
 let seleccionadosCollection;
 
+
+//Prueba
+const server = http.createServer(app);
+inicializarSocket(server);
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"]
+}));
+
+app.use(express.json());
 //Conexion MongoDB
 const MONGO_URI =  'mongodb://127.0.0.1:27017';
 const DB_NAME = 'jszone';
@@ -160,7 +172,7 @@ app.post('/voluntariados', async (req, res) => {
   try {
     const nuevoVoluntariado = req.body;
     const result = await voluntariadosCollection.insertOne(nuevoVoluntariado);
-    io.emit('voluntariado:nuevo', { ...nuevoVoluntariado, _id: result.insertedId });
+    getIO().emit('voluntariado:nuevo', { ...nuevoVoluntariado, _id: result.insertedId });
 
     res.status(201).json({ message: 'Voluntariado creado con éxito', insertedId: result.insertedId });
 
@@ -183,7 +195,7 @@ app.delete('/voluntariados/:id', async (req, res) => {
     }
     // También lo eliminamos de los seleccionados si estaba allí
     await seleccionadosCollection.deleteOne({ voluntariadoId: new ObjectId(id) });
-    io.emit('voluntariado:eliminado', { id });
+    getIO().emit('voluntariado:eliminado', { id });
 
     res.json({ message: 'Voluntariado eliminado con éxito' });
   } catch (err) {
@@ -211,7 +223,7 @@ app.post('/seleccionados', async (req, res) => {
       return res.status(400).json({ message: 'ID de voluntariado inválido' });
     }
     await seleccionadosCollection.updateOne({ voluntariadoId: new ObjectId(voluntariadoId) }, { $setOnInsert: { voluntariadoId: new ObjectId(voluntariadoId) } }, { upsert: true });
-    io.emit('seleccionado:agregado', { voluntariadoId });
+    getIO().emit('seleccionado:agregado', { voluntariadoId });
 
     res.status(201).json({ message: 'Seleccionado agregado con éxito' });
   } catch (err) {
@@ -389,7 +401,7 @@ const apolloServer = new ApolloServer({
 // ========================================
 
 // Servidor REST en puerto 3000
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Servidor REST corriendo en: http://localhost:${PORT}`);
 
 });

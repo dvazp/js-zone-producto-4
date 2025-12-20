@@ -1,30 +1,37 @@
 import { obtenerUsuarioActivo, obtenerVoluntariados, obtenerSeleccionados, agregarSeleccionado, borrarSeleccionado } from './almacenaje.js';
 
 
-import {io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+
+// Socket.io está disponible globalmente desde el CDN
+const socket = io("http://localhost:3000");
+
+// Verificar conexión
+socket.on('connect', () => {
+    console.log('✅ Socket.io conectado con ID:', socket.id);
+});
+
+socket.on('connect_error', (error) => {
+    console.error('❌ Error de conexión Socket.io:', error);
+});
 
 // Escuchar eventos de actualización en tiempo real
 socket.on('voluntariado:nuevo', (voluntariado) => {
-  console.log('Nuevo voluntariado recibido:', voluntariado);
-  displayVoluntariados(); // Recargar la lista
+    console.log('📢 Nuevo voluntariado recibido:', voluntariado);
+    displayVoluntariados();
 });
 
 socket.on('voluntariado:eliminado', ({ id }) => {
-  console.log('Voluntariado eliminado:', id);
-  displayVoluntariados();
+    console.log('🗑️ Voluntariado eliminado:', id);
+    displayVoluntariados();
 });
 
 socket.on('seleccionado:agregado', ({ voluntariadoId }) => {
-  console.log('Seleccionado agregado:', voluntariadoId);
-  displayVoluntariados();
+    console.log('➕ Seleccionado agregado:', voluntariadoId);
+    displayVoluntariados();
 });
 
-socket.on('seleccionado:eliminado', ({ voluntariadoId }) => {
-  console.log('Seleccionado eliminado:', voluntariadoId);
-  displayVoluntariados();
-});
+// ...existing code...
 
 // Primero mostramos el usuario activo
 function mostrarUsuarioActivo() {

@@ -1,22 +1,32 @@
-// Socket.io
-
 import { Server } from 'socket.io';
 
-const io = new Server(5100,{
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
+let io;
 
-io.on('connection', (socket) => {
-  console.log('Cliente conectado:', socket.id);
-
-  socket.on('disconnect', () => {
-    console.log('Cliente desconectado:', socket.id);
+function inicializarSocket(server) {
+  io = new Server(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
   });
-});
 
-console.log("Servidor de Socket.io escuchando en el puerto 5000");
+  io.on('connection', (socket) => {
+    console.log('Cliente conectado:', socket.id);
 
-export { io };
+    socket.on('disconnect', () => {
+      console.log('Cliente desconectado:', socket.id);
+    });
+  });
+
+  console.log("Socket.io inicializado");
+  return io;
+}
+
+function getIO() {
+  if (!io) {
+    throw new Error("Socket.io no ha sido inicializado");
+  }
+  return io;
+}
+
+export { inicializarSocket, getIO };
