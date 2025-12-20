@@ -1,3 +1,4 @@
+
 import { usuariosBase, voluntariadosBase } from "./datos.js"; 
 
 // Funcion que obtiene el usuario activo del localStorage.
@@ -53,6 +54,46 @@ export function borrarUsuario(email) {
         guardarUsuarios(usuarios);
     }
 }
+
+// Fin de usuarios.
+
+// -- Inicio Fase 4 Usuarios -- //
+// export function obtenerUsuarios() {
+//     const storedData = localStorage.getItem(USERS_KEY);
+
+//     if (!storedData) {
+//         guardarUsuarios(usuariosBase);
+//         console.log('Usuarios iniciales plantados en localStorage.');
+//         return usuariosBase;
+//     }
+
+//     console.log('Usuarios cargados desde localStorage:', storedData);
+//     return JSON.parse(storedData);
+// }
+
+export const obtenerUsuariosFetch = async () => {
+
+    const QuerySQL =`
+    query {
+    usuarios {
+        nombre
+        email
+  }
+}`
+try{
+    const response = await fetch('http://localhost:4000/',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ query: QuerySQL }) // Enviamos la query
+    });
+    const resultado = await response.json();
+    return resultado.data.usuarios;
+}catch(error){
+
+    console.error("Error en la petición:",error);
+    return[]
+}
+};
 
 // DB para los voluntariados
 

@@ -1,5 +1,5 @@
 //Importamos las funciones de almacenaje
-import { obtenerUsuarioActivo, obtenerUsuarios, agregarUsuario, borrarUsuario } from './almacenaje.js';
+import { obtenerUsuarioActivo, obtenerUsuarios, agregarUsuario, borrarUsuario, obtenerUsuariosFetch } from './almacenaje.js';
 
 const userHeader = document.getElementById("user_header");
 
@@ -121,3 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error initializing app:', error);
     }
 });
+
+// Codigo de testeo
+
+obtenerUsuariosFetch();
