@@ -3,6 +3,7 @@ import express from 'express';
 import { MongoClient, ObjectId  } from 'mongodb';
 import fs from 'fs/promises'; // Sirve para leer el json de datos.json
 import crearLoginRoute from "./routes/login.js";
+import { io } from './socket.js';
 
 
 // Definimos el puerto donde correrá el servidor (3000 por defecto)
@@ -159,7 +160,10 @@ app.post('/voluntariados', async (req, res) => {
   try {
     const nuevoVoluntariado = req.body;
     const result = await voluntariadosCollection.insertOne(nuevoVoluntariado);
+    io.emit('voluntariado:nuevo', { ...nuevoVoluntariado, _id: result.insertedId });
+
     res.status(201).json({ message: 'Voluntariado creado con éxito', insertedId: result.insertedId });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error creando voluntariado' });
@@ -179,6 +183,8 @@ app.delete('/voluntariados/:id', async (req, res) => {
     }
     // También lo eliminamos de los seleccionados si estaba allí
     await seleccionadosCollection.deleteOne({ voluntariadoId: new ObjectId(id) });
+    io.emit('voluntariado:eliminado', { id });
+
     res.json({ message: 'Voluntariado eliminado con éxito' });
   } catch (err) {
     console.error(err);
@@ -205,6 +211,8 @@ app.post('/seleccionados', async (req, res) => {
       return res.status(400).json({ message: 'ID de voluntariado inválido' });
     }
     await seleccionadosCollection.updateOne({ voluntariadoId: new ObjectId(voluntariadoId) }, { $setOnInsert: { voluntariadoId: new ObjectId(voluntariadoId) } }, { upsert: true });
+    io.emit('seleccionado:agregado', { voluntariadoId });
+
     res.status(201).json({ message: 'Seleccionado agregado con éxito' });
   } catch (err) {
     console.error(err);

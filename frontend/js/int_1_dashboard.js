@@ -3,15 +3,28 @@ import { obtenerUsuarioActivo, obtenerVoluntariados, obtenerSeleccionados, agreg
 
 import {io } from "socket.io-client";
 
-//Prueba de socket.io
 const socket = io("http://localhost:5000");
 
-socket.on("PruebaSocket", (arg) => {
-    console.log(arg);
+// Escuchar eventos de actualización en tiempo real
+socket.on('voluntariado:nuevo', (voluntariado) => {
+  console.log('Nuevo voluntariado recibido:', voluntariado);
+  displayVoluntariados(); // Recargar la lista
 });
 
-socket.emit("PruebaSocket", "Hola desde el cliente");
+socket.on('voluntariado:eliminado', ({ id }) => {
+  console.log('Voluntariado eliminado:', id);
+  displayVoluntariados();
+});
 
+socket.on('seleccionado:agregado', ({ voluntariadoId }) => {
+  console.log('Seleccionado agregado:', voluntariadoId);
+  displayVoluntariados();
+});
+
+socket.on('seleccionado:eliminado', ({ voluntariadoId }) => {
+  console.log('Seleccionado eliminado:', voluntariadoId);
+  displayVoluntariados();
+});
 
 // Primero mostramos el usuario activo
 function mostrarUsuarioActivo() {

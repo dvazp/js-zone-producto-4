@@ -1,5 +1,12 @@
 //Importamos todas las funciones de almacenaje.js
 import { obtenerUsuarioActivo, obtenerVoluntariados, agregarVoluntariado, borrarVoluntariado } from './almacenaje.js';
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
+
+// Escuchar actualizaciones en tiempo real
+socket.on('voluntariado:nuevo', () => displayVoluntariados());
+socket.on('voluntariado:eliminado', () => displayVoluntariados());
 
 // Primero mostramos el usuario activo
 function mostrarUsuarioActivo() {
