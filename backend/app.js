@@ -6,6 +6,7 @@ import fs from 'fs/promises'; // Sirve para leer el json de datos.json
 import crearLoginRoute from "./routes/login.js";
 import { inicializarSocket, getIO } from './socket.js';
 import cors from 'cors';
+import jwt from 'jsonwebtoken';
 
 // Definimos el puerto donde correrá el servidor (3000 por defecto)
 const PORT = process.env.PORT || 3000;
@@ -260,6 +261,18 @@ const typeDefs = `
     tipo: String!
   }
 
+  # Usuario público devuelto tras autenticación
+  type UsuarioPublic {
+    user: String!
+    email: String!
+    tipo: String!
+  }
+
+  # Payload de autenticación
+  type AuthPayload {
+    token: String!
+    usuario: UsuarioPublic!
+  }
 
   enum TipoVoluntariado{
   Oferta
@@ -295,6 +308,9 @@ const typeDefs = `
       nombre: String!
       tipo: String!
     ): Usuario!
+
+    # Login mediante usuario y contraseña
+    login(user: String!, password: String!): AuthPayload!
 
     crearVoluntariado(
         titulo: String! 
@@ -338,6 +354,41 @@ const resolvers = {
   },
 
   Mutation: {
+    login: async (parent, args) => {
+      const { user, password } = args;
+
+      // Buscamos por `user` (nombre) o por `email`, ignorando mayúsculas
+      const query = {
+        $or: [
+          { user: { $regex: `^${user}$`, $options: 'i' } },
+          { email: { $regex: `^${user}$`, $options: 'i' } }
+        ]
+      };
+
+      const usuario = await usuariosCollection.findOne(query);
+      if (!usuario) {
+        throw new Error('Usuario no encontrado');
+      }
+
+      if (usuario.password !== password) {
+        throw new Error('Contraseña incorrecta');
+      }
+
+      const token = jwt.sign(
+        { id: usuario._id, user: usuario.user, tipo: usuario.tipo },
+        'secreto-super-seguro',
+        { expiresIn: '1h' }
+      );
+
+      return {
+        token,
+        usuario: {
+          user: usuario.user,
+          email: usuario.email,
+          tipo: usuario.tipo,
+        }
+      };
+    },
     crearUsuario: async (parent, args) => {
       const { user, email, password, nombre, tipo } = args;
 

@@ -1,15 +1,41 @@
 
 import { usuariosBase, voluntariadosBase } from "./datos.js"; 
 
-// Funcion que obtiene el usuario activo del localStorage.
+// Funcion que obtiene el usuario activo desde localStorage.
 export function obtenerUsuarioActivo() {
     const usuarioActivo = localStorage.getItem("UsuarioActivo");
     return usuarioActivo;
 }
 
-// Funcion que guarda el usuario logueado como usuario activo.
+// Funcion que guarda el usuario logueado como usuario activo en localStorage.
 export function loguearUsuario(usuario) {
-    localStorage.setItem("UsuarioActivo", usuario);
+    // Guarda tanto el email (UsuarioActivo) como el nombre mostrado (UsuarioNombre)
+    if (typeof usuario === 'string' && usuario.includes('@')) {
+        // Recibido el email
+        localStorage.setItem("UsuarioActivo", usuario);
+    } else if (typeof usuario === 'string') {
+        // Recibido nombre, lo guardamos como UsuarioNombre
+        localStorage.setItem('UsuarioNombre', usuario);
+    }
+}
+
+// Alternativa: guardar both nombre y email en localStorage
+export function loguearUsuarioDetalle(nombre, email) {
+    if (email) localStorage.setItem('UsuarioActivo', email);
+    if (nombre) localStorage.setItem('UsuarioNombre', nombre);
+}
+
+// Guardar / obtener token de sesión (no usar localStorage)
+export function guardarToken(token) {
+    if (token) localStorage.setItem('authToken', token);
+}
+
+export function obtenerToken() {
+    return localStorage.getItem('authToken');
+}
+
+export function obtenerUsuarioNombre() {
+    return localStorage.getItem('UsuarioNombre');
 }
 
 
