@@ -1,5 +1,5 @@
 //Importamos las funciones de almacenaje
-import { obtenerUsuarioActivo, obtenerUsuarios, agregarUsuario, borrarUsuario, obtenerUsuariosFetch } from './almacenaje.js';
+import { obtenerUsuarioActivo, altaUsuariofetch, agregarUsuario, borrarUsuario, obtenerUsuariosFetch } from './almacenaje.js';
 
 const userHeader = document.getElementById("user_header");
 
@@ -14,14 +14,11 @@ function mostrarUsuarioActivo() {
 }
 
 // Funciones de mostrar y borrar los usuarios
-function listaUsuarios() {
+async function listaUsuarios() {
     const consultaUser_form = document.getElementById("consultaUser_form");
     consultaUser_form.innerHTML = '';
-
-    console.log('Cargando usuarios desde localStorage...');
-    const usuarios = obtenerUsuarios();
+    const usuarios = await obtenerUsuariosFetch();
     usuarios.forEach(u => {
-        console.log('Usuario encontrado:', u);
         let contorno = document.createElement("div");
         contorno.classList.add('user-card');
         let divUsuario = document.createElement("div");
@@ -72,21 +69,24 @@ function addUsuario() {
     const nombre = getFieldValue('nombre');
     const email = getFieldValue('email');
     const password = getFieldValue('password');
+    const user = getFieldValue('nombre');
+    const tipo = getFieldValue('tipo');
+    
 
     if (nombre == "" || email == "" || password == "") {
         window.alert("No puede haber ningún campo en blanco.");
         return;
     }
 
-    const usuario = { nombre, email, password };
+    const usuario = { user,email,password,nombre,tipo};
 
     try {
-        agregarUsuario(usuario);
+        altaUsuariofetch(usuario.user,usuario.email,usuario.password,usuario.nombre,usuario.tipo);
 
-        ['nombre', 'email', 'password'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = '';
-        });
+        // ['nombre', 'email', 'password'].forEach(id => {
+        //     const el = document.getElementById(id);
+        //     if (el) el.value = '';
+        // });
 
         listaUsuarios();
     } catch (error) {

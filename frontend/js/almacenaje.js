@@ -58,19 +58,8 @@ export function borrarUsuario(email) {
 // Fin de usuarios.
 
 // -- Inicio Fase 4 Usuarios -- //
-// export function obtenerUsuarios() {
-//     const storedData = localStorage.getItem(USERS_KEY);
 
-//     if (!storedData) {
-//         guardarUsuarios(usuariosBase);
-//         console.log('Usuarios iniciales plantados en localStorage.');
-//         return usuariosBase;
-//     }
-
-//     console.log('Usuarios cargados desde localStorage:', storedData);
-//     return JSON.parse(storedData);
-// }
-
+// Fetch para obtener la lista de los usuarios
 export const obtenerUsuariosFetch = async () => {
 
     const QuerySQL =`
@@ -78,6 +67,7 @@ export const obtenerUsuariosFetch = async () => {
     usuarios {
         nombre
         email
+        password
   }
 }`
 try{
@@ -92,11 +82,47 @@ try{
 
     console.error("Error en la petición:",error);
     return[]
-}
-};
+}};
+
+// Fetch para dar de alta a un usuario
+export const altaUsuariofetch = async (user,email,password,nombre,tipo) => {
+    const QuerySQL =`
+   mutation crearUsuario($user: String!,$email: String!,$password: String!,$nombre: String!,$tipo: String!) {
+   crearUsuario(user: $user,email: $email,password: $password,nombre: $nombre,tipo: $tipo) {
+    user
+    email
+    password
+    nombre
+    tipo
+  }
+}`
+try{
+    const response = await fetch('http://localhost:4000/',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ 
+        query: QuerySQL,
+        variables:{
+            user: user,
+            email: email,
+            password: password,
+            nombre: nombre,
+            tipo: tipo
+        } 
+    })
+    });
+    const resultado = await response.json();
+    if(resultado.errors){
+        console.log(resultado.errors)
+    }
+    return resultado.data.crearUsuario;
+}catch(error){
+    console.error("Error en la petición:",error);
+    return null
+}};
+
 
 // DB para los voluntariados
-
 const DB_NAME = 'VoluntariadosDB';
 const STORE_NAME = 'voluntariados';
 const SELECCIONADOS_STORE_NAME = 'seleccionados';
