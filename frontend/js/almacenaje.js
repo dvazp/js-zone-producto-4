@@ -12,53 +12,9 @@ export function loguearUsuario(usuario) {
     localStorage.setItem("UsuarioActivo", usuario);
 }
 
-// CRUD de localStorage para usuarios
-const USERS_KEY = 'AppUsers';
 
-export function obtenerUsuarios() {
-    const storedData = localStorage.getItem(USERS_KEY);
-
-    if (!storedData) {
-        guardarUsuarios(usuariosBase);
-        console.log('Usuarios iniciales plantados en localStorage.');
-        return usuariosBase;
-    }
-
-    console.log('Usuarios cargados desde localStorage:', storedData);
-    return JSON.parse(storedData);
-}
-
-export function guardarUsuarios(usuarios) {
-    localStorage.setItem(USERS_KEY, JSON.stringify(usuarios));
-}
-
-export function obtenerUsuarioPorEmail(email) {
-    const usuarios = obtenerUsuarios();
-    return usuarios.find(u => u.email === email) || null;
-}
-
-export function agregarUsuario(usuario) {
-    const usuarios = obtenerUsuarios();
-    if (obtenerUsuarioPorEmail(usuario.email)) {
-        throw new Error('Ya existe un usuario con este email.');
-    }
-    usuarios.push(usuario);
-    guardarUsuarios(usuarios);
-}
-
-export function borrarUsuario(email) {
-    const usuarios = obtenerUsuarios();
-    const index = usuarios.findIndex(u => u.email === email);
-    if (index > -1) {
-        usuarios.splice(index, 1);
-        guardarUsuarios(usuarios);
-    }
-}
-
-// Fin de usuarios.
 
 // -- Inicio Fase 4 Usuarios -- //
-
 // Fetch para obtener la lista de los usuarios
 export const obtenerUsuariosFetch = async () => {
 
@@ -120,6 +76,36 @@ try{
     console.error("Error en la petición:",error);
     return null
 }};
+
+
+//--Fetch para borrar los usuarios de la DB--//
+export const borrarUsuariofetch = async (email) => {
+    const QuerySQL =
+    `
+    mutation eliminarUsuario($email: String!) {
+      eliminarUsuario(email: $email)
+    }`;
+try{
+    const response = await fetch('http://localhost:4000/',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ 
+        query: QuerySQL,
+        variables:{
+            email: email,
+        } 
+    })
+    });
+    const resultado = await response.json();
+    if(resultado.errors){
+        console.log(resultado.errors)
+    }
+}catch(error){
+    console.error("Error en la petición:",error);
+    return null
+}};
+
+
 
 
 // DB para los voluntariados

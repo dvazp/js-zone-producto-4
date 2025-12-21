@@ -1,5 +1,5 @@
 //Importamos las funciones de almacenaje
-import { obtenerUsuarioActivo, altaUsuariofetch, agregarUsuario, borrarUsuario, obtenerUsuariosFetch } from './almacenaje.js';
+import { obtenerUsuarioActivo, altaUsuariofetch,borrarUsuariofetch,obtenerUsuariosFetch } from './almacenaje.js';
 
 const userHeader = document.getElementById("user_header");
 
@@ -82,12 +82,6 @@ function addUsuario() {
 
     try {
         altaUsuariofetch(usuario.user,usuario.email,usuario.password,usuario.nombre,usuario.tipo);
-
-        // ['nombre', 'email', 'password'].forEach(id => {
-        //     const el = document.getElementById(id);
-        //     if (el) el.value = '';
-        // });
-
         listaUsuarios();
     } catch (error) {
         console.error('Error adding user:', error);
@@ -96,9 +90,9 @@ function addUsuario() {
 }
 
 // Borrar usuario
-function removeUsuario(email) {
+ function removeUsuario(email) {
     try {
-        borrarUsuario(email);
+        borrarUsuariofetch(email);
         listaUsuarios();
     } catch (error) {
         console.error('Error removing user:', error);
@@ -122,6 +116,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Codigo de testeo
-
-obtenerUsuariosFetch();
