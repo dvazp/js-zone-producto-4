@@ -6,8 +6,29 @@ const socket = io("http://localhost:3000");
 
 
 // Escuchar actualizaciones en tiempo real
-socket.on('voluntariado:nuevo', () => displayVoluntariados());
-socket.on('voluntariado:eliminado', () => displayVoluntariados());
+// Cuando se crea un voluntariado
+socket.on('voluntariado:nuevo', (dato) => {
+    console.log("Socket: Nuevo voluntariado recibido", dato);
+    displayVoluntariados(); // Recargamos la lista
+});
+
+// Cuando se elimina un voluntariado
+socket.on('voluntariado:eliminado', (dato) => {
+    console.log("Socket: Voluntariado eliminado", dato);
+    displayVoluntariados(); // Recargamos la lista
+});
+
+// Cuando alguien selecciona un voluntariado
+socket.on('seleccionado:agregado', (dato) => {
+    console.log("Socket: Alguien seleccionó un voluntariado", dato);
+    displayVoluntariados(); 
+});
+
+// Cuando alguien deselecciona
+socket.on('seleccionado:eliminado', (dato) => {
+    console.log("Socket: Alguien deseleccionó", dato);
+    displayVoluntariados();
+});
 
 // Primero mostramos el usuario activo
 function mostrarUsuarioActivo() {
@@ -64,21 +85,22 @@ function getFieldValue(id, promptText) {
     return v ? v.trim() : '';
 }
 
-async function addVoluntariado() {
+async function addVoluntariado(event) {
+    if(event) event.preventDefault();
+    
     const titulo = getFieldValue('titulo', 'Título:');
     const usuario = getFieldValue('usuario', 'Usuario:');
     const fecha = getFieldValue('fecha', 'Fecha (ej. 16-10-2025):');
     const descripcion = getFieldValue('descripcion', 'Descripción:');
     const tipo = getFieldValue('tipo', 'Tipo:');
     const email = obtenerUsuarioActivo(); // Obtener el email del usuario activo
-    const id = new Date().getTime(); // Esto genera un ID único basado en la marca de tiempo, muy dificilmente se generarán ids repetidos
 
     if (titulo == "" || usuario == "" || fecha == "" || descripcion == "" || tipo == "") {
         window.alert("No puede haber ningún campo en blanco.");
         return;
     }
 
-    const nuevo = { titulo, usuario, fecha, descripcion, tipo, email, id };
+    const nuevo = { titulo, usuario, fecha, descripcion, tipo, email};
 
     try {
         await agregarVoluntariado(nuevo);
@@ -88,18 +110,19 @@ async function addVoluntariado() {
             if (el) el.value = '';
         });
 
-        await displayVoluntariados();
+        // await displayVoluntariados();
     } catch (error) {
         console.error('Error al añadir un nuevo usuario:', error);
         window.alert(error.message);
     }
 
+    console.log('Voluntariado añadido:', nuevo);
 }
 
 async function eliminarVoluntariado(id) {
     try {
         await borrarVoluntariado(id);
-        await displayVoluntariados();
+        // await displayVoluntariados();
     } catch (error) {
         console.error('Error al eliminar usuario:', error);
     }
