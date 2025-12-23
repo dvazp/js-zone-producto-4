@@ -31,12 +31,13 @@ let seleccionadosCollection;
 const server = http.createServer(app);
 inicializarSocket(server);
 
+app.use(express.json());
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"]
 }));
 
-app.use(express.json());
+
 //Conexion MongoDB
 const MONGO_URI =  'mongodb://127.0.0.1:27017';
 const DB_NAME = 'jszone';
@@ -418,6 +419,12 @@ const resolvers = {
 
       const nuevoUsuario = { user, email, password, nombre, tipo };
       await usuariosCollection.insertOne(nuevoUsuario);
+      try {
+        const io = getIO();
+        io.emit('usuario_creado', { user, email ,nombre , tipo });
+      } catch (error) {
+        console.error("Socket no inicializado")
+      }
       return nuevoUsuario;
     },
 
@@ -425,6 +432,12 @@ const resolvers = {
       const result = await usuariosCollection.deleteOne({ email: args.email });
       if (result.deletedCount === 0) {
         throw new Error('Usuario no encontrado');
+      }
+      try {
+       const io =getIO();
+       io.emit('usuario_borrado',args.email); 
+      } catch (error) {
+        console.error("Error al emitir socket")
       }
       return 'Usuario eliminado con éxito';
     },
@@ -514,7 +527,7 @@ const apolloServer = new ApolloServer({
 
 // Servidor REST en puerto 3000
 server.listen(PORT, () => {
-  console.log(`Servidor REST corriendo en: http://localhost:${PORT}`);
+  console.log(`Servidor REST y Sockets corriendo en: http://localhost:${PORT}`);
 
 });
 
