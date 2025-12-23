@@ -440,7 +440,7 @@ async function iniciarServidores() {
     // 2. Iniciar Servidor HTTPS (Express + Sockets) en el puerto 3000
     // Este cumple con el punto "Hace uso de HTTPS" de tu rúbrica
     server.listen(3000, () => {
-      console.log('🔒 Servidor Seguro (REST + Sockets) en https://localhost:3000');
+      console.log(' Servidor Seguro (REST + Sockets) en https://localhost:3000');
     });
 
     // 3. Iniciar Apollo Standalone en el puerto 4000
@@ -448,7 +448,7 @@ async function iniciarServidores() {
     const { url } = await startStandaloneServer(apolloServer, {
       listen: { port: 4000 },
     });
-    console.log(`🚀 GraphQL listo en: ${url}`);
+    console.log(` GraphQL listo en: ${url}`);
 
   } catch (error) {
     console.error("Error al arrancar los servicios:", error);
