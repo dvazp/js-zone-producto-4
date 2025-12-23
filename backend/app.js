@@ -293,7 +293,7 @@ const typeDefs = `
     _id: ID!
     titulo: String!
     usuario: String!
-    fecha: Date!
+    fecha: String!
     descripcion: String!
     tipo: TipoVoluntariado!
     email: String!
@@ -320,8 +320,12 @@ const typeDefs = `
 
 const resolvers = {
   Query: {
-    usuarios: () => Usuario.find(),
-    usuario: (_, { email }) => Usuario.findOne({ email }),
+    usuarios: async () => {
+      return await Usuario.find().lean(); 
+    },
+    usuario: async (_, { email }) => {
+      return await Usuario.findOne({ email }).lean();
+    },
     voluntariados: () => Voluntariado.find(),
     voluntariado: (_, { id }) => Voluntariado.findById(id),
     seleccionados: async () => {

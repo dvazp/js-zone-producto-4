@@ -6,7 +6,7 @@ const usuarioSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   nombre: { type: String, required: true },
-  tipo: { type: String, required: true, enum: ['admin', 'usuario'] }
+  tipo: { type: String, required: true, enum: ['admin', 'user','usuario','Voluntario'] }
 }, { timestamps: true });
 
 // Schema de Voluntariado

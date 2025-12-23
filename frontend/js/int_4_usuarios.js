@@ -99,7 +99,7 @@ function addUsuario() {
 
     try {
         altaUsuariofetch(usuario.user,usuario.email,usuario.password,usuario.nombre,usuario.tipo);
-        listaUsuarios();
+        console.log(usuario)
     } catch (error) {
         console.error('Error adding user:', error);
         window.alert(error.message);
@@ -110,7 +110,6 @@ function addUsuario() {
  function removeUsuario(email) {
     try {
         borrarUsuariofetch(email);
-        listaUsuarios();
     } catch (error) {
         console.error('Error removing user:', error);
     }

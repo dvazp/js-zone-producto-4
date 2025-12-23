@@ -56,7 +56,12 @@ try{
         body: JSON.stringify({ query: QuerySQL }) // Enviamos la query
     });
     const resultado = await response.json();
-    return resultado.data.usuarios;
+
+    if(resultado.errors){
+        console.error("Error de Apollo",resultado.errors[0].message);
+        return[];
+    }
+    return resultado.data?.usuarios || [];
 }catch(error){
 
     console.error("Error en la petición:",error);
