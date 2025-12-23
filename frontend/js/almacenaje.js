@@ -50,7 +50,7 @@ export const obtenerUsuariosFetch = async () => {
   }
 }`
 try{
-    const response = await fetch('http://localhost:4000/',{
+    const response = await fetch('https://localhost:4000/',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ query: QuerySQL }) // Enviamos la query
@@ -81,7 +81,7 @@ export const altaUsuariofetch = async (user,email,password,nombre,tipo) => {
   }
 }`
 try{
-    const response = await fetch('http://localhost:4000/',{
+    const response = await fetch('https://localhost:4000/',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ 
@@ -114,7 +114,7 @@ export const borrarUsuariofetch = async (email) => {
       eliminarUsuario(email: $email)
     }`;
 try{
-    const response = await fetch('http://localhost:4000/',{
+    const response = await fetch('https://localhost:4000/',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ 
@@ -134,7 +134,7 @@ try{
 }};
 
 
-const REST_API_URL = 'http://localhost:3000';
+const REST_API_URL = 'https://localhost:3000';
 
 export async function obtenerVoluntariados() {
     try {

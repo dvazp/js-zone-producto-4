@@ -2,7 +2,7 @@
 import { obtenerUsuarioActivo, obtenerVoluntariados, agregarVoluntariado, borrarVoluntariado } from './almacenaje.js';
 
 
-const socket = io("http://localhost:3000");
+const socket = io("https://localhost:3000");
 
 
 // Escuchar actualizaciones en tiempo real

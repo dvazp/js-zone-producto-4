@@ -6,7 +6,7 @@ let socket = null;
 function getSocket() {
     if (socket) return socket;
     if (typeof io === 'undefined') throw new Error('Socket.io client no disponible');
-    socket = io('http://localhost:3000');
+    socket = io('https://localhost:3000');
     return socket;
 }
 

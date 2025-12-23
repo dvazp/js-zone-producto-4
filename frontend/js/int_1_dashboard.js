@@ -1,7 +1,7 @@
 import { obtenerUsuarioActivo, obtenerVoluntariados, obtenerSeleccionados, agregarSeleccionado, borrarSeleccionado } from './almacenaje.js';
 
 // Socket.io está disponible globalmente desde el CDN
-const socket = io("http://localhost:3000");
+const socket = io("https://localhost:3000");
 
 // Variable para recordar qué filtro estamos usando (Todas o Mias)
 let filtroActual = 'all';
