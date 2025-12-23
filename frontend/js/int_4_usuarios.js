@@ -3,7 +3,7 @@ import { obtenerUsuarioActivo, altaUsuariofetch,borrarUsuariofetch,obtenerUsuari
 const userHeader = document.getElementById("user_header");
 
 
-const socket = io("http://localhost:3000", {
+const socket = io("https://localhost:3000", {
     transports: ["websocket"] 
 });
 
