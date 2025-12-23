@@ -1,6 +1,5 @@
 //Importamos las funciones de almacenaje
 import { obtenerUsuarioActivo, altaUsuariofetch,borrarUsuariofetch,obtenerUsuariosFetch } from './almacenaje.js';
-// import { inicializarSocket, getIO } from '/js-zone-producto-4/backend/socket.js';
 const userHeader = document.getElementById("user_header");
 
 

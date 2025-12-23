@@ -6,7 +6,8 @@ function inicializarSocket(server) {
   io = new Server(server, {
     cors: {
       origin: "*",
-      methods: ["GET", "POST"]
+      methods: ["GET", "POST"],
+      credentials:true
     }
   });
 
