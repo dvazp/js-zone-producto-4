@@ -49,7 +49,11 @@ async function displayVoluntariados() {
     listaDiv.innerHTML = '';
 
     let voluntariados = await obtenerVoluntariados();
+    
     voluntariados.forEach((voluntariado) => {
+        // SEGURIDAD: Nos aseguramos de tener un ID válido (sea _id o id)
+        const idReal = voluntariado._id || voluntariado.id;
+
         const voluntariadoDiv = document.createElement('div');
         voluntariadoDiv.classList.add('voluntariado-item');
         voluntariadoDiv.innerHTML = `
@@ -59,18 +63,25 @@ async function displayVoluntariados() {
                 <p><strong>Fecha:</strong> ${voluntariado.fecha}</p>
                 <p><strong>Descripción:</strong> ${voluntariado.descripcion}</p>
                 <p><strong>Tipo:</strong> ${voluntariado.tipo}</p>
-                <button class="delete-btn" data-id="${voluntariado.id}" type="button">Eliminar</button>
+                <button class="delete-btn" data-id="${idReal}" type="button">Eliminar</button>
             </div>
         `;
         
         listaDiv.appendChild(voluntariadoDiv);
     });
 
-    //Añadir funcionalidad a los botones de eliminar
+    // Añadir funcionalidad a los botones de eliminar
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', (e) => {
-            const id = e.target.dataset.id;
-            eliminarVoluntariado(id);
+            const id = e.target.dataset.id; 
+            
+            console.log("ID recuperado:", id); // Para verificar en consola
+            
+            if(id && id !== "undefined") {
+                eliminarVoluntariado(id);
+            } else {
+                console.error("ID inválido al intentar borrar");
+            }
         });
     });
 
