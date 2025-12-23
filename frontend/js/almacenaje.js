@@ -8,18 +8,6 @@ export function obtenerUsuarioActivo() {
 }
 
 // Funcion que guarda el usuario logueado como usuario activo en localStorage.
-export function loguearUsuario(usuario) {
-    // Guarda tanto el email (UsuarioActivo) como el nombre mostrado (UsuarioNombre)
-    if (typeof usuario === 'string' && usuario.includes('@')) {
-        // Recibido el email
-        localStorage.setItem("UsuarioActivo", usuario);
-    } else if (typeof usuario === 'string') {
-        // Recibido nombre, lo guardamos como UsuarioNombre
-        localStorage.setItem('UsuarioNombre', usuario);
-    }
-}
-
-// Alternativa: guardar both nombre y email en localStorage
 export function loguearUsuarioDetalle(nombre, email, tipo) {
     if (email) localStorage.setItem('UsuarioActivo', email);
     if (nombre) localStorage.setItem('UsuarioNombre', nombre);
