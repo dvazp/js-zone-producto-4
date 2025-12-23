@@ -1,7 +1,25 @@
 //Importamos las funciones de almacenaje
 import { obtenerUsuarioActivo, altaUsuariofetch,borrarUsuariofetch,obtenerUsuariosFetch } from './almacenaje.js';
-
+// import { inicializarSocket, getIO } from '/js-zone-producto-4/backend/socket.js';
 const userHeader = document.getElementById("user_header");
+
+
+const socket = io("http://localhost:3000", {
+    transports: ["websocket"] 
+});
+
+
+socket.on('usuario_creado',(datos)=>{
+    console.log("Nuevo Usuario Creado");
+    listaUsuarios()
+});
+
+socket.on('usuario_borrado',(email)=>{
+    console.log("Nuevo Usuario Borrado");
+    listaUsuarios()
+});
+
+
 
 // Funcion que Muestra el Usuario Activo
 function mostrarUsuarioActivo() {
