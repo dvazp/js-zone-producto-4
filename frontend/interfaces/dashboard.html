@@ -47,30 +47,31 @@
   </div>
 
     <div id="ofertas" class="d-flex flex-row gap-3 justify-content-center mt-3 p-4">
+      
       <div class="card shadow-sm px-0 m-0 border-0 w-50">
           <div class="card-header bg-success text-white text-center" style="width: 100%;">
-              <h5>Voluntariados disponibles</h1>
+              <h5>Voluntariados disponibles</h5>
           </div>
-          <div class="card-body">
-              <form id="consultaVoluntariado_form">
-                  <div id="lista" class="list-group destino-zona">
-                      <!-- Aquí se mostrarán los voluntariados -->
+          <div class="card-body" style="min-height: 300px; background-color: #fcfcfc;">
+              <form id="consultaVoluntariado_form" class="h-100">
+                  <div id="lista" class="list-group destino-zona h-100">
+                      </div>
+              </form>
+          </div>
+      </div>
+
+      <div class="card shadow-sm px-0 m-0 border-0 w-50">
+          <div class="card-header bg-primary text-white text-center" style="width: 100%;">
+              <h5>Voluntariados seleccionados</h5>
+          </div>
+          <div class="card-body" style="min-height: 300px; background-color: #eef2ff;">
+              <form id="consultaVoluntariado_form_sel" class="h-100">
+                   <div id="contenedor-seleccion" class="destino-zona h-100">
                   </div>
               </form>
           </div>
       </div>
-      <div class="card shadow-sm px-0 m-0 border-0 w-50">
-          <div class="card-header bg-success text-white text-center" style="width: 100%;">
-              <h5>Voluntariados seleccionados</h1>
-          </div>
-          <div class="card-body p-0">
-              <form id="consultaVoluntariado_form" class="destino">
-                  <div id="contenedor-seleccion" class="destino-zona">
-                      <div class="w-100"></div>
-                  </div>
-              </form>
-          </div>
-      </div>
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>

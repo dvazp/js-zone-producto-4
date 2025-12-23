@@ -171,10 +171,13 @@ app.get('/voluntariados', async (req, res) => {
 });
 
 app.post('/voluntariados', async (req, res) => {
+  console.log("Datos recibidos:", req.body);
   try {
     const nuevoVoluntariado = req.body;
     const result = await voluntariadosCollection.insertOne(nuevoVoluntariado);
-    getIO().emit('voluntariado:nuevo', { ...nuevoVoluntariado, _id: result.insertedId });
+    console.log("Guardado en DB con ID:", result.insertedId);
+    const voluntariadoCompleto = { ...nuevoVoluntariado, _id: result.insertedId };
+    getIO().emit('voluntariado:nuevo', voluntariadoCompleto);
 
     res.status(201).json({ message: 'Voluntariado creado con éxito', insertedId: result.insertedId });
 
@@ -234,10 +237,21 @@ app.post('/seleccionados', async (req, res) => {
   }
 });
 
+// En server.js, busca esta ruta (aprox línea 192 en tu código)
 app.delete('/seleccionados/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    
     await seleccionadosCollection.deleteOne({ voluntariadoId: new ObjectId(id) });
+    
+    try {
+        const io = getIO();
+        io.emit('seleccionado:eliminado', { voluntariadoId: id });
+        console.log('📢 Notificación socket enviada: seleccionado eliminado (Vía REST)');
+    } catch (socketError) {
+        console.error("Error al emitir socket:", socketError);
+    }
+
     res.json({ message: 'Seleccionado eliminado con éxito' });
   } catch (err) {
     console.error(err);
@@ -423,10 +437,20 @@ const resolvers = {
       return 'Usuario eliminado con éxito';
     },
 
-    crearVoluntariado: async (parent, args) => {
+crearVoluntariado: async (parent, args) => {
       const nuevoVoluntariado = { ...args };
       const result = await voluntariadosCollection.insertOne(nuevoVoluntariado);
-      return { ...nuevoVoluntariado, _id: result.insertedId, id: result.insertedId.toString() };
+      const voluntariadoFinal = { ...nuevoVoluntariado, _id: result.insertedId, id: result.insertedId.toString() };
+
+      try {
+        const io = getIO();
+        io.emit('voluntariado:nuevo', voluntariadoFinal);
+        console.log('Notificación socket: voluntariado creado');
+      } catch (error) {
+        console.error("Error de notificación", error);
+      }
+
+      return voluntariadoFinal;
     },
 
     eliminarVoluntariado: async (parent, args) => {
@@ -436,6 +460,14 @@ const resolvers = {
       }
       // También lo eliminamos de los seleccionados si estaba allí
       await seleccionadosCollection.deleteOne({ voluntariadoId: new ObjectId(args.id) });
+      try {
+        const io = getIO();
+        io.emit('voluntariado:eliminado', { id: args.id });
+        console.log('Notificación socket: voluntariado eliminado');
+      } catch (error) {
+        console.error("Error enviando notificación socket:", error);
+      }
+
       return args.id;
     },
 
@@ -444,12 +476,36 @@ const resolvers = {
       if (!voluntariado) {
         throw new Error('Voluntariado no encontrado');
       }
-      await seleccionadosCollection.updateOne({ voluntariadoId: new ObjectId(voluntariadoId) }, { $setOnInsert: { voluntariadoId: new ObjectId(voluntariadoId) } }, { upsert: true });
+      await seleccionadosCollection.updateOne(
+        { voluntariadoId: new ObjectId(voluntariadoId) }, 
+        { $setOnInsert: { voluntariadoId: new ObjectId(voluntariadoId) } }, 
+        { upsert: true }
+      );
+
+      try {
+        const io = getIO();
+        io.emit('seleccionado:agregado', { voluntariadoId });
+        console.log('Notificación socket: seleccionado agregado');
+      } catch (error) {
+        console.error("Error enviando notificación socket:", error);
+      }
+
       return voluntariado;
     },
 
     borrarSeleccionado: async (_, { voluntariadoId }) => {
       await seleccionadosCollection.deleteOne({ voluntariadoId: new ObjectId(voluntariadoId) });
+
+      try {
+        const io = getIO();
+        io.emit('seleccionado:eliminado', { voluntariadoId }); 
+        
+        console.log('Notificación enviada: seleccionado eliminado');
+      } catch (error) {
+        console.error("Error socket:", error);
+      }
+      // -------------------------------------------------------
+
       return voluntariadoId;
     }
   }

@@ -1,10 +1,10 @@
 import { obtenerUsuarioActivo, obtenerVoluntariados, obtenerSeleccionados, agregarSeleccionado, borrarSeleccionado } from './almacenaje.js';
 
-
-
-
 // Socket.io está disponible globalmente desde el CDN
 const socket = io("http://localhost:3000");
+
+// Variable para recordar qué filtro estamos usando (Todas o Mias)
+let filtroActual = 'all';
 
 // Verificar conexión
 socket.on('connect', () => {
@@ -15,23 +15,28 @@ socket.on('connect_error', (error) => {
     console.error('❌ Error de conexión Socket.io:', error);
 });
 
-// Escuchar eventos de actualización en tiempo real
+// === ESCUCHAR EVENTOS (Esto actualiza la interfaz automáticamente) ===
+
 socket.on('voluntariado:nuevo', (voluntariado) => {
-    console.log('📢 Nuevo voluntariado recibido:', voluntariado);
-    displayVoluntariados();
+    console.log('📢 Nuevo voluntariado recibido');
+    displayVoluntariados(filtroActual);
 });
 
 socket.on('voluntariado:eliminado', ({ id }) => {
-    console.log('🗑️ Voluntariado eliminado:', id);
-    displayVoluntariados();
+    console.log('🗑️ Voluntariado eliminado');
+    displayVoluntariados(filtroActual);
 });
 
 socket.on('seleccionado:agregado', ({ voluntariadoId }) => {
-    console.log('➕ Seleccionado agregado:', voluntariadoId);
-    displayVoluntariados();
+    console.log('➕ Seleccionado agregado');
+    displayVoluntariados(filtroActual);
 });
 
-// ...existing code...
+socket.on('seleccionado:eliminado', ({ voluntariadoId }) => {
+    console.log('➖ Seleccionado eliminado');
+    displayVoluntariados(filtroActual);
+});
+
 
 // Primero mostramos el usuario activo
 function mostrarUsuarioActivo() {
@@ -46,12 +51,14 @@ function mostrarUsuarioActivo() {
     }
 }
 
-//Funcion para mostrar los voluntariados en el div "lista"
+// Funcion para mostrar los voluntariados
 async function displayVoluntariados(filter = 'all') {
+    filtroActual = filter; // Actualizamos la variable global
+
     const disponiblesContainer = document.getElementById("lista");
     const seleccionadosContainer = document.getElementById("contenedor-seleccion");
     
-    // Limpiamos ambos contenedores para evitar duplicados al filtrar
+    // Limpiamos ambos contenedores
     disponiblesContainer.innerHTML = '';
     seleccionadosContainer.innerHTML = '';
 
@@ -60,23 +67,30 @@ async function displayVoluntariados(filter = 'all') {
     if (filter === 'mine') {
         const usuarioActivo = obtenerUsuarioActivo();
         if (usuarioActivo) {
-            voluntariados = voluntariados.filter(v => v.email === usuarioActivo);
+            voluntariados = voluntariados.filter(v => v.email === usuarioActivo || v.usuario === usuarioActivo);
         }
     }
 
     voluntariados.forEach((voluntariado) => {
+        // Aseguramos el ID correcto (string)
+        const id = voluntariado._id || voluntariado.id;
+
         // Revisamos el tipo para ver si es peticion o oferta y aplicamos el color de fondo
         const bgColor = voluntariado.tipo === 'Petición' ? 'bg-primary' : 'bg-success';
 
         const divVoluntario = document.createElement("div");
+        // MANTENIENDO TU DISEÑO EXACTO:
         divVoluntario.classList.add("grab", "card", "col-12", "mb-3", "col-lg-3", "rounded" ,"p-5", bgColor, "d-flex","align-items-start","efectoCard","mx-2","mx-3");
         divVoluntario.style.width = "auto";
-        divVoluntario.id = `voluntariado-${voluntariado.id}`;
+        divVoluntario.id = `voluntariado-${id}`; // ID del elemento DOM
 
         // Arrastrable
         divVoluntario.draggable = true;
+        
         divVoluntario.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', e.target.id);
+            // Guardamos el ID limpio directamente
+            e.dataTransfer.setData('text/plain', id);
+            e.dataTransfer.effectAllowed = "move";
 
             setTimeout(() => {
                 e.target.style.opacity = '0.5';
@@ -87,7 +101,7 @@ async function displayVoluntariados(filter = 'all') {
             e.target.style.opacity = '1';
         });
 
-        // Creamos los datos de los voluntarios
+        // Creamos los datos de los voluntarios (TU LÓGICA UI INTACTA)
         let titulo = document.createElement("p");
         let usuario = document.createElement("p");
         let fecha = document.createElement("p");
@@ -107,8 +121,9 @@ async function displayVoluntariados(filter = 'all') {
         // Los añadimos al html
         divVoluntario.append(titulo, fecha, descripcion, usuario);
 
-        // Colocar la tarjeta en el contenedor correcto
-        if (seleccionadosIds.has(voluntariado.id)) {
+        // --- LÓGICA DE DISTRIBUCIÓN ---
+        // Aquí decidimos en qué columna va
+        if (seleccionadosIds.has(id)) {
             seleccionadosContainer.appendChild(divVoluntario);
         } else {
             disponiblesContainer.appendChild(divVoluntario);
@@ -134,9 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const destino = document.getElementById('contenedor-seleccion');
     const origen = document.getElementById('lista');
 
-    // Permitir soltar en el contenedor de "seleccionados"
+    // === EVENTOS DRAG & DROP (ZONA SELECCIONADOS) ===
     destino.addEventListener('dragover', (e) => {
         e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
         destino.classList.add('drag-over');
     });
 
@@ -144,24 +160,28 @@ document.addEventListener('DOMContentLoaded', () => {
         destino.classList.remove('drag-over');
     });
 
-    destino.addEventListener('drop', (e) => {
+    destino.addEventListener('drop', async (e) => {
         e.preventDefault();
         destino.classList.remove('drag-over');
-        const cardId = e.dataTransfer.getData('text/plain');
-        const tarjetaArrastrable = document.getElementById(cardId);
         
-        if (tarjetaArrastrable) {
-            // Guardar en IndexedDB
-            const voluntariadoId = parseInt(cardId.replace('voluntariado-', ''), 10);
-            agregarSeleccionado(voluntariadoId).catch(console.error);
-
-            destino.appendChild(tarjetaArrastrable);
+        // Recuperamos el ID que guardamos en dragstart
+        const id = e.dataTransfer.getData('text/plain');
+        
+        if (id) {
+            // NO usamos parseInt (rompe los IDs de Mongo).
+            // NO hacemos appendChild manual. Esperamos al socket.
+            try {
+                await agregarSeleccionado(id); 
+            } catch (err) {
+                console.error(err);
+            }
         }
     });
 
-    // Permitir soltar de vuelta en el contenedor de "disponibles"
+    // === EVENTOS DRAG & DROP (ZONA DISPONIBLES) ===
     origen.addEventListener('dragover', (e) => {
         e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
         origen.classList.add('drag-over');
     });
 
@@ -169,17 +189,20 @@ document.addEventListener('DOMContentLoaded', () => {
         origen.classList.remove('drag-over');
     });
 
-    origen.addEventListener('drop', (e) => {
+    origen.addEventListener('drop', async (e) => {
         e.preventDefault();
         origen.classList.remove('drag-over');
-        const cardId = e.dataTransfer.getData('text/plain');
-        const tarjetaArrastrable = document.getElementById(cardId);
-        if (tarjetaArrastrable) {
-            // Eliminar de IndexedDB
-            const voluntariadoId = parseInt(cardId.replace('voluntariado-', ''), 10);
-            borrarSeleccionado(voluntariadoId).catch(console.error);
 
-            origen.appendChild(tarjetaArrastrable);
+        const id = e.dataTransfer.getData('text/plain');
+
+        if (id) {
+            // NO usamos parseInt.
+            // Llamamos a borrarSeleccionado y esperamos al socket.
+            try {
+                await borrarSeleccionado(id);
+            } catch (err) {
+                console.error(err);
+            }
         }
     });
 });
