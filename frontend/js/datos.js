@@ -4,7 +4,7 @@ let usuariosBase = [
         password: "Mario",
         nombre: "Mario",
         email: "mario@mail.com",
-        tipo: "Voluntario"
+        tipo: "admin"
     }
 ]
 

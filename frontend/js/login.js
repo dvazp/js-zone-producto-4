@@ -105,8 +105,8 @@ async function LoginUser(event){
 
         const usuario = data.usuario;
         const nombreMostrar = usuario?.user || usuario?.email || inputUser;
-        // Guardamos nombre y email en localStorage
-        loguearUsuarioDetalle(nombreMostrar, usuario?.email || inputUser);
+        // Guardamos nombre, email y tipo en localStorage
+        loguearUsuarioDetalle(nombreMostrar, usuario?.email || inputUser, usuario?.tipo || 'user');
         // Actualizar header directamente para evitar efectos secundarios de otros scripts
         try {
             const headerEl = document.getElementById('user_header');
@@ -114,9 +114,17 @@ async function LoginUser(event){
         } catch (e) {
             logger('login: error updating header ' + e, 'error');
         }
-        alert('Inicio de sesión correcto');
 
-        // Limpiamos inputs
+        // Redirigir a dashboard después de login
+        try {
+            window.location.href = 'dashboard.html';
+            return; // evita seguir ejecutando código en esta página
+        } catch (e) {
+            // si falla la redirección, limpiamos los inputs como fallback
+            console.error('Redirección fallida', e);
+        }
+
+        // Limpiamos inputs (fallback si no se redirige)
         document.getElementById('user').value = '';
         document.getElementById('password').value = '';
     } catch (error) {

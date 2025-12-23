@@ -20,9 +20,18 @@ export function loguearUsuario(usuario) {
 }
 
 // Alternativa: guardar both nombre y email en localStorage
-export function loguearUsuarioDetalle(nombre, email) {
+export function loguearUsuarioDetalle(nombre, email, tipo) {
     if (email) localStorage.setItem('UsuarioActivo', email);
     if (nombre) localStorage.setItem('UsuarioNombre', nombre);
+    if (tipo) localStorage.setItem('UsuarioTipo', tipo);
+}
+
+export function obtenerUsuarioTipo() {
+    return localStorage.getItem('UsuarioTipo');
+}
+
+export function esAdmin() {
+    return obtenerUsuarioTipo() === 'admin';
 }
 
 // Guardar / obtener token de sesión (no usar localStorage)

@@ -73,6 +73,16 @@
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const tipo = localStorage.getItem('UsuarioTipo');
+                if (tipo !== 'admin') {
+                    document.querySelectorAll('a[href="gestion_usuarios.html"], a[href="gestion_voluntarios.html"]').forEach(el => el.style.display = 'none');
+                }
+            } catch (e) {}
+        });
+    </script>
 
 </body>
 
