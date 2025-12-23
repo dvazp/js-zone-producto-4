@@ -10,7 +10,7 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { Usuario, Voluntariado, Seleccionado } from './mongoose.js';
 import { ApolloServer } from '@apollo/server';
-import { startStandaloneServer } from '@apollo/server/standalone';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -429,26 +429,46 @@ const resolvers = {
 // INICIAR SERVIDORES
 // ========================================
 
-// Definimos el servidor de Apollo fuera para que sea accesible
-const apolloServer = new ApolloServer({ typeDefs, resolvers });
+const apolloServer = new ApolloServer({ 
+  typeDefs, 
+  resolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer: server })]
+});
 
 async function iniciarServidores() {
   try {
-    // 1. Conexión a Base de Datos
-    await conectarMongo();
+    // 1. Iniciar Apollo Server
+    await apolloServer.start();
 
-    // 2. Iniciar Servidor HTTPS (Express + Sockets) en el puerto 3000
-    // Este cumple con el punto "Hace uso de HTTPS" de tu rúbrica
+    // 2. Agregar Apollo como middleware en Express (ruta /graphql)
+    app.use('/graphql', 
+      express.json(),
+      (req, res, next) => {
+        apolloServer.executeHTTPGraphQLRequest({
+          httpGraphQLRequest: {
+            method: req.method,
+            headers: new Map(Object.entries(req.headers)),
+            search: new URL(req.url, `https://${req.headers.host}`).search,
+            body: req.body,
+          },
+          context: async () => ({ req, res }),
+        }).then(async (httpGraphQLResponse) => {
+          for (const [key, value] of httpGraphQLResponse.headers) {
+            res.setHeader(key, value);
+          }
+          res.status(httpGraphQLResponse.status || 200);
+          if (httpGraphQLResponse.body.kind === 'complete') {
+            res.send(httpGraphQLResponse.body.string);
+          }
+        }).catch(next);
+      }
+    );
+
+    // 3. Iniciar Servidor HTTPS (Express + Sockets + GraphQL) en el puerto 3000
     server.listen(3000, () => {
-      console.log(' Servidor Seguro (REST + Sockets) en https://localhost:3000');
+      console.log('Servidor Seguro (REST + GraphQL + Sockets) en https://localhost:3000');
+      console.log('GraphQL disponible en https://localhost:3000/graphql');
     });
-
-    // 3. Iniciar Apollo Standalone en el puerto 4000
-    // Al ser un servidor aparte, evitamos el error de expressMiddleware
-    const { url } = await startStandaloneServer(apolloServer, {
-      listen: { port: 4000 },
-    });
-    console.log(` GraphQL listo en: ${url}`);
 
   } catch (error) {
     console.error("Error al arrancar los servicios:", error);

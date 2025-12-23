@@ -1,4 +1,3 @@
-
 import { usuariosBase, voluntariadosBase } from "./datos.js"; 
 
 // Funcion que obtiene el usuario activo desde localStorage.
@@ -50,7 +49,7 @@ export const obtenerUsuariosFetch = async () => {
   }
 }`
 try{
-    const response = await fetch('https://localhost:4000/',{
+    const response = await fetch('https://localhost:3000/graphql',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ query: QuerySQL }) // Enviamos la query
@@ -81,7 +80,7 @@ export const altaUsuariofetch = async (user,email,password,nombre,tipo) => {
   }
 }`
 try{
-    const response = await fetch('https://localhost:4000/',{
+    const response = await fetch('https://localhost:3000/graphql',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ 
@@ -114,7 +113,7 @@ export const borrarUsuariofetch = async (email) => {
       eliminarUsuario(email: $email)
     }`;
 try{
-    const response = await fetch('https://localhost:4000/',{
+    const response = await fetch('https://localhost:3000/graphql',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ 
