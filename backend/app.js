@@ -83,6 +83,43 @@ async function conectarMongo(){
 }
 
 await conectarMongo();
+// Añadir manejo de eventos de socket relacionados con autenticación
+try {
+  const ioServer = getIO();
+  ioServer.on('connection', (socket) => {
+    socket.on('login', async (data, callback) => {
+      try {
+        const { user, password } = data || {};
+        const query = {
+          $or: [
+            { user: { $regex: `^${user}$`, $options: 'i' } },
+            { email: { $regex: `^${user}$`, $options: 'i' } }
+          ]
+        };
+        const usuario = await usuariosCollection.findOne(query);
+        if (!usuario) {
+          if (typeof callback === 'function') callback({ success: false, message: 'Usuario no encontrado' });
+          return;
+        }
+        if (usuario.password !== password) {
+          if (typeof callback === 'function') callback({ success: false, message: 'Contraseña incorrecta' });
+          return;
+        }
+        const token = jwt.sign(
+          { id: usuario._id, user: usuario.user, tipo: usuario.tipo },
+          'secreto-super-seguro',
+          { expiresIn: '1h' }
+        );
+        if (typeof callback === 'function') callback({ success: true, token, usuario: { user: usuario.user, email: usuario.email, tipo: usuario.tipo } });
+      } catch (err) {
+        console.error('Error manejando login socket:', err);
+        if (typeof callback === 'function') callback({ success: false, message: 'Error en servidor' });
+      }
+    });
+  });
+} catch (e) {
+  console.error('No se pudo añadir handler de sockets para login:', e);
+}
 // ========================================
 // INICIALIZACIÓN DE DATOS
 // ========================================

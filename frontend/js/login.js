@@ -1,6 +1,14 @@
 import { obtenerUsuarioActivo, obtenerUsuarioNombre, guardarToken, loguearUsuarioDetalle } from './almacenaje.js';
 
 const API_URL = 'http://localhost:4000/';
+let socket = null;
+
+function getSocket() {
+    if (socket) return socket;
+    if (typeof io === 'undefined') throw new Error('Socket.io client no disponible');
+    socket = io('http://localhost:3000');
+    return socket;
+}
 
 function onDomReady(cb) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', cb);
@@ -41,19 +49,24 @@ async function LoginUser(event) {
 }
 
 async function sendLoginRequest(user, password) {
-    const query = `mutation Login($user: String!, $password: String!) { login(user: $user, password: $password) { token usuario { user email tipo } } }`;
-    const resp = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, variables: { user, password } })
-    });
+    return new Promise((resolve, reject) => {
+        let sock;
+        try {
+            sock = getSocket();
+        } catch (err) {
+            return reject(err);
+        }
 
-    if (!resp.ok) throw new Error('Error en la petición al servidor');
-    const json = await resp.json();
-    if (json.errors && json.errors.length) throw new Error(json.errors[0].message || 'Error en el login');
-    const result = json.data?.login;
-    if (!result) throw new Error('Respuesta inválida del servidor');
-    return result;
+        try {
+            sock.emit('login', { user, password }, (response) => {
+                if (!response) return reject(new Error('No hay respuesta del servidor'));
+                if (!response.success) return reject(new Error(response.message || 'Error en el login'));
+                resolve({ token: response.token, usuario: response.usuario });
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
 }
 
 function handleLoginSuccess(data, fallbackUser) {
