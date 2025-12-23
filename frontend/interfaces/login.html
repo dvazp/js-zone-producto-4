@@ -38,6 +38,16 @@
       // ignore
     }
   </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const tipo = localStorage.getItem('UsuarioTipo');
+        if (tipo !== 'admin') {
+          document.querySelectorAll('a[href="gestion_usuarios.html"], a[href="gestion_voluntarios.html"]').forEach(el => el.style.display = 'none');
+        }
+      } catch (e) {}
+    });
+  </script>
   <div class="container my-5 login_container">
     <div class="card shadow-sm bg-light mx-auto">
       <div class="card-header bg-success text-white text-center">

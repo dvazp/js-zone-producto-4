@@ -8,21 +8,18 @@ export function obtenerUsuarioActivo() {
 }
 
 // Funcion que guarda el usuario logueado como usuario activo en localStorage.
-export function loguearUsuario(usuario) {
-    // Guarda tanto el email (UsuarioActivo) como el nombre mostrado (UsuarioNombre)
-    if (typeof usuario === 'string' && usuario.includes('@')) {
-        // Recibido el email
-        localStorage.setItem("UsuarioActivo", usuario);
-    } else if (typeof usuario === 'string') {
-        // Recibido nombre, lo guardamos como UsuarioNombre
-        localStorage.setItem('UsuarioNombre', usuario);
-    }
-}
-
-// Alternativa: guardar both nombre y email en localStorage
-export function loguearUsuarioDetalle(nombre, email) {
+export function loguearUsuarioDetalle(nombre, email, tipo) {
     if (email) localStorage.setItem('UsuarioActivo', email);
     if (nombre) localStorage.setItem('UsuarioNombre', nombre);
+    if (tipo) localStorage.setItem('UsuarioTipo', tipo);
+}
+
+export function obtenerUsuarioTipo() {
+    return localStorage.getItem('UsuarioTipo');
+}
+
+export function esAdmin() {
+    return obtenerUsuarioTipo() === 'admin';
 }
 
 // Guardar / obtener token de sesión (no usar localStorage)
@@ -132,180 +129,85 @@ try{
 }};
 
 
-
-
-// DB para los voluntariados
-const DB_NAME = 'VoluntariadosDB';
-const STORE_NAME = 'voluntariados';
-const SELECCIONADOS_STORE_NAME = 'seleccionados';
-const DB_VERSION = 2; // Incrementar versión para onupgradeneeded
-
-let dbPromise = null;
-
-function initDB() {
-    // evita,mos abrir la DB varias veces
-    if (dbPromise) {
-        return dbPromise;
-    }
-
-    dbPromise = new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-        request.onerror = (event) => {
-            console.error('Error al abrir la base de datos IndexedDB:', event.target.error);
-            reject('Error de IndexedDB: ' + event.target.error);
-        };
-
-        request.onsuccess = (event) => {
-            const db = event.target.result;
-            resolve(db);
-        };
-
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-
-                objectStore.createIndex('tipo', 'tipo', { unique: false });
-                objectStore.createIndex('usuario', 'usuario', { unique: false });
-
-                console.log('Creando almacén y plantando datos iniciales...');
-                voluntariadosBase.forEach(voluntariado => {
-                    objectStore.add(voluntariado);
-                });
-            }
-
-            // Crear el nuevo almacén para los seleccionados si no existe
-            if (!db.objectStoreNames.contains(SELECCIONADOS_STORE_NAME)) {
-                db.createObjectStore(SELECCIONADOS_STORE_NAME, { keyPath: 'id' });
-            }
-        };
-    });
-
-    return dbPromise;
-}
+const REST_API_URL = 'http://localhost:3000';
 
 export async function obtenerVoluntariados() {
-    const db = await initDB();
-
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], 'readonly');
-        const objectStore = transaction.objectStore(STORE_NAME);
-
-        const request = objectStore.getAll();
-
-        request.onerror = (event) => {
-            console.error('Error al obtener voluntariados:', event.target.error);
-            reject('Error al leer de la BD: ' + event.target.error); // Fallo
-        };
-
-        request.onsuccess = (event) => {
-            resolve(event.target.result); //Jiji acierto
-        };
-    });
-}
-
-// --- CRUD para Voluntariados Seleccionados ---
-
-export async function obtenerSeleccionados() {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([SELECCIONADOS_STORE_NAME], 'readonly');
-        const objectStore = transaction.objectStore(SELECCIONADOS_STORE_NAME);
-        const request = objectStore.getAll();
-
-        request.onerror = (event) => {
-            console.error('Error al obtener seleccionados:', event.target.error);
-            reject('Error al leer de la BD: ' + event.target.error);
-        };
-
-        request.onsuccess = (event) => {
-            // Devolvemos un Set de IDs para búsquedas rápidas
-            const ids = new Set(event.target.result.map(item => item.id));
-            resolve(ids);
-        };
-    });
-}
-
-export async function agregarSeleccionado(voluntariadoId) {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([SELECCIONADOS_STORE_NAME], 'readwrite');
-        const objectStore = transaction.objectStore(SELECCIONADOS_STORE_NAME);
-        const request = objectStore.add({ id: voluntariadoId });
-
-        request.onerror = (event) => {
-            console.error('Error al agregar seleccionado:', event.target.error);
-            reject('Error al escribir en la BD: ' + event.target.error);
-        };
-
-        request.onsuccess = () => {
-            resolve();
-        };
-    });
-}
-
-export async function borrarSeleccionado(voluntariadoId) {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([SELECCIONADOS_STORE_NAME], 'readwrite');
-        const objectStore = transaction.objectStore(SELECCIONADOS_STORE_NAME);
-        const request = objectStore.delete(voluntariadoId);
-
-        request.onerror = (event) => {
-            console.error('Error al borrar seleccionado:', event.target.error);
-            reject('Error al borrar de la BD: ' + event.target.error);
-        };
-
-        request.onsuccess = () => {
-            resolve();
-        };
-    });
+    try {
+        const response = await fetch(`${REST_API_URL}/voluntariados`);
+        if (!response.ok) throw new Error('Error conectando al servidor');
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error obteniendo voluntariados:", error);
+        return [];
+    }
 }
 
 export async function agregarVoluntariado(voluntariado) {
-    const db = await initDB();
-
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], 'readwrite');
-        const objectStore = transaction.objectStore(STORE_NAME);
-
-        if (!voluntariado.id) {
-            voluntariado.id = new Date().getTime();
-        }
-
-        const request = objectStore.add(voluntariado);
-
-        request.onerror = (event) => {
-            console.error('Error al agregar voluntariado:', event.target.error);
-            reject('Error al escribir en la BD: ' + event.target.error); // Jiji ha fallado
-        };
-
-        request.onsuccess = (event) => {
-            resolve(); // Jiji ha funcionado
-        };
-    });
+    try {
+        // No generamos ID aquí, dejamos que MongoDB lo haga
+        const response = await fetch(`${REST_API_URL}/voluntariados`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(voluntariado)
+        });
+        
+        if (!response.ok) throw new Error('Error al guardar en servidor');
+        return await response.json(); // Retorna el objeto creado con su ID
+    } catch (error) {
+        console.error("Error agregando voluntariado:", error);
+        throw error;
+    }
 }
 
 export async function borrarVoluntariado(id) {
-    const db = await initDB();
+    try {
+        const response = await fetch(`${REST_API_URL}/voluntariados/${id}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('Error borrando en servidor');
+        return await response.json();
+    } catch (error) {
+        console.error("Error borrando voluntariado:", error);
+        throw error;
+    }
+}
 
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], 'readwrite');
-        const objectStore = transaction.objectStore(STORE_NAME);
+// --- CRUD para Voluntariados Seleccionados (También via Server) ---
 
-        const idNumerico = Number(id);
+export async function obtenerSeleccionados() {
+    try {
+        const response = await fetch(`${REST_API_URL}/seleccionados`);
+        if (!response.ok) throw new Error('Error obteniendo seleccionados');
+        const idsArray = await response.json();
+        // Convertimos el array de IDs en un Set para mantener la compatibilidad con tu código anterior
+        return new Set(idsArray);
+    } catch (error) {
+        console.error("Error obteniendo seleccionados:", error);
+        return new Set();
+    }
+}
 
-        const request = objectStore.delete(idNumerico);
+export async function agregarSeleccionado(voluntariadoId) {
+    try {
+        await fetch(`${REST_API_URL}/seleccionados`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ voluntariadoId })
+        });
+    } catch (error) {
+        console.error("Error agregando seleccionado:", error);
+        throw error;
+    }
+}
 
-        request.onerror = (event) => {
-            console.error('Error al borrar voluntariado:', event.target.error);
-            reject('Error al borrar de la BD: ' + event.target.error); // Jiji ha fallado otra vez
-        };
-
-        request.onsuccess = (event) => {
-            resolve(); // Jiji esto tambiém ha funcionado
-        };
-    });
+export async function borrarSeleccionado(voluntariadoId) {
+    try {
+        await fetch(`${REST_API_URL}/seleccionados/${voluntariadoId}`, {
+            method: 'DELETE'
+        });
+    } catch (error) {
+        console.error("Error borrando seleccionado:", error);
+        throw error;
+    }
 }

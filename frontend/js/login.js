@@ -1,57 +1,18 @@
 import { obtenerUsuarioActivo, obtenerUsuarioNombre, guardarToken, loguearUsuarioDetalle } from './almacenaje.js';
 
-// Inicialización adaptable: si el DOM ya está listo llamamos init() inmediatamente,
-// si no, lo registramos en DOMContentLoaded.
-function init() {
-    // Intentar adjuntar el listener, reintentando si el formulario aún no existe
-    function tryAttachForm(attempt = 1) {
-        const formLogin = document.getElementById("login_form");
-        if (formLogin) {
-            formLogin.addEventListener("submit", LoginUser);
-            return true;
-        }
+const API_URL = 'http://localhost:4000/';
 
-        if (attempt >= 6) {
-            return false;
-        }
+function onDomReady(cb) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', cb);
+    else cb();
+}
 
-        setTimeout(() => tryAttachForm(attempt + 1), 200);
-        return false;
-    }
-
-    tryAttachForm();
-    // Listener delegado: captura submits aunque el formulario no tenga el listener directo
-    document.addEventListener('submit', function(e) {
-        try {
-            const target = e.target;
-            if (target && target.id === 'login_form') {
-                e.preventDefault();
-                // Call handler
-                LoginUser(e);
-            }
-        } catch (err) {
-            logger('login: error in delegated submit ' + err, 'error');
-        }
-    }, true);
-    // Mostramos el usuario activo (si hay)
+onDomReady(() => {
+    const form = document.getElementById('login_form');
+    if (form) form.addEventListener('submit', LoginUser);
     mostrarUsuarioActivo();
-
-    // Indicador visual para comprobar que el script ha sido ejecutado
-    const status = document.getElementById('script-status');
-    // Exponer un fallback global para compatibilidad con scripts antiguos
-    try {
-        // Establece window.userHeader si algún otro script espera esa variable global
-        window.userHeader = document.getElementById('user_header') || null;
-    } catch (e) {
-        // ignore
-    }
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
+    try { window.userHeader = document.getElementById('user_header') || null; } catch (e) {}
+});
 
 
 /**
@@ -62,66 +23,47 @@ if (document.readyState === 'loading') {
  * - Actualiza el header si es correcta.
  * @param {SubmitEvent} event
  */
-async function LoginUser(event){
-    event.preventDefault();
+async function LoginUser(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    const userEl = document.getElementById('user');
+    const passEl = document.getElementById('password');
+    const user = (userEl?.value || '').trim();
+    const password = passEl?.value || '';
 
-    const inputUser = (document.getElementById('user')?.value || '').trim();
-    const inputPassword = document.getElementById('password')?.value || '';
-
-    if(!inputUser || !inputPassword){
-        alert("Introduce todos los campos");
-        return;
-    }
+    if (!user || !password) return alert('Introduce todos los campos');
 
     try {
-        const query = `mutation Login($user: String!, $password: String!) {
-            login(user: $user, password: $password) {
-                token
-                usuario { user email tipo }
-            }
-        }`;
-
-        const resp = await fetch('http://localhost:4000/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, variables: { user: inputUser, password: inputPassword } })
-        });
-
-        const result = await resp.json();
-        if (result.errors && result.errors.length > 0) {
-            alert(result.errors[0].message || 'Error en el login');
-            return;
-        }
-
-        const data = result.data?.login;
-        if (!data) {
-            alert('Respuesta inválida del servidor');
-            return;
-        }
-
-        if (data.token) {
-            guardarToken(data.token);
-        }
-
-        const usuario = data.usuario;
-        const nombreMostrar = usuario?.user || usuario?.email || inputUser;
-        // Guardamos nombre y email en localStorage
-        loguearUsuarioDetalle(nombreMostrar, usuario?.email || inputUser);
-        // Actualizar header directamente para evitar efectos secundarios de otros scripts
-        try {
-            const headerEl = document.getElementById('user_header');
-            if (headerEl) headerEl.textContent = localStorage.getItem('UsuarioActivo') || localStorage.getItem('UsuarioNombre') || '-no login-';
-        } catch (e) {
-            logger('login: error updating header ' + e, 'error');
-        }
-        alert('Inicio de sesión correcto');
-
-        // Limpiamos inputs
-        document.getElementById('user').value = '';
-        document.getElementById('password').value = '';
-    } catch (error) {
-        alert('No se pudo conectar con el servidor');
+        const data = await sendLoginRequest(user, password);
+        handleLoginSuccess(data, user);
+    } catch (err) {
+        alert(err.message || 'No se pudo conectar con el servidor');
     }
+}
+
+async function sendLoginRequest(user, password) {
+    const query = `mutation Login($user: String!, $password: String!) { login(user: $user, password: $password) { token usuario { user email tipo } } }`;
+    const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, variables: { user, password } })
+    });
+
+    if (!resp.ok) throw new Error('Error en la petición al servidor');
+    const json = await resp.json();
+    if (json.errors && json.errors.length) throw new Error(json.errors[0].message || 'Error en el login');
+    const result = json.data?.login;
+    if (!result) throw new Error('Respuesta inválida del servidor');
+    return result;
+}
+
+function handleLoginSuccess(data, fallbackUser) {
+    if (data.token) guardarToken(data.token);
+    const usuario = data.usuario || {};
+    const nombreMostrar = usuario.user || usuario.email || fallbackUser;
+    loguearUsuarioDetalle(nombreMostrar, usuario.email || fallbackUser, usuario.tipo || 'user');
+    const headerEl = document.getElementById('user_header');
+    if (headerEl) headerEl.textContent = localStorage.getItem('UsuarioActivo') || localStorage.getItem('UsuarioNombre') || '-no login-';
+    try { location.assign('dashboard.html'); } catch (e) { console.error('Redirección fallida', e); }
 }
 
 // Funcion que MuestraUsuarioActivo
